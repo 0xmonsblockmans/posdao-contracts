@@ -1,4 +1,5 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
 import "./base/BanReasons.sol";
 import "./interfaces/IGovernance.sol";
@@ -6,7 +7,6 @@ import "./interfaces/IStakingAuRa.sol";
 import "./interfaces/IValidatorSetAuRa.sol";
 import "./upgradeability/UpgradeableOwned.sol";
 import "./libs/SafeMath.sol";
-
 
 /// @dev Lets any validator to create a ballot for some validator removal.
 /// This can be helpful when some validator doesn't work for a long time or delays blocks.
@@ -122,7 +122,11 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// @param ballotId The id of the ballot for which the vote was given.
     /// @param choice Can be either: 1 - keep the pool, 2 - remove, 3 - remove and ban.
     /// @param senderPoolId The id of the pool which called the `vote` function.
-    event Voted(uint256 indexed ballotId, uint256 choice, uint256 indexed senderPoolId);
+    event Voted(
+        uint256 indexed ballotId,
+        uint256 choice,
+        uint256 indexed senderPoolId
+    );
 
     /// @dev Emitted by the `finalize` or `vote` function to signal that a ballot is finalized.
     /// @param ballotId The id of the finalized ballot.
@@ -154,8 +158,15 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// 1 - vote for keeping the pool
     /// 2 - vote for removing the pool without long ban
     /// 3 - vote for removing and banning the pool
-    function create(uint256 _poolId, uint256 _duration, bytes32 _reason, uint256 _choice) external {
-        uint256 senderPoolId = validatorSetContract.idByStakingAddress(msg.sender);
+    function create(
+        uint256 _poolId,
+        uint256 _duration,
+        bytes32 _reason,
+        uint256 _choice
+    ) external {
+        uint256 senderPoolId = validatorSetContract.idByStakingAddress(
+            msg.sender
+        );
         require(validatorSetContract.isValidatorById(_poolId));
         require(validatorSetContract.isValidatorById(senderPoolId));
         require(_poolId != senderPoolId);
@@ -163,7 +174,9 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
         // Make sure the previous ballot for _poolId is finalized
         require(ballotIdByPoolId[_poolId] == 0);
 
-        uint256 validatorsLength = validatorSetContract.getValidatorsIds().length;
+        uint256 validatorsLength = validatorSetContract
+            .getValidatorsIds()
+            .length;
 
         // Each validator cannot create too many parallel ballots
         uint256 maxParallelBallotsAllowed = validatorsLength / 3;
@@ -174,9 +187,9 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
 
         require(
             _reason == BAN_REASON_OFTEN_BLOCK_DELAYS ||
-            _reason == BAN_REASON_OFTEN_BLOCK_SKIPS ||
-            _reason == BAN_REASON_OFTEN_REVEAL_SKIPS ||
-            _reason == BAN_REASON_UNREVEALED
+                _reason == BAN_REASON_OFTEN_BLOCK_SKIPS ||
+                _reason == BAN_REASON_OFTEN_REVEAL_SKIPS ||
+                _reason == BAN_REASON_UNREVEALED
         );
 
         uint256 ballotId = ++latestBallotId;
@@ -187,20 +200,24 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
         ballotExpirationBlock[ballotId] = expirationBlock;
         {
             uint256 fullStakingEpochs = BAN_DURATION;
-            IStakingAuRa stakingContract = IStakingAuRa(validatorSetContract.stakingContract());
-            uint256 stakingEpochDuration = stakingContract.stakingEpochDuration();
-            uint256 stakingEpochEndBlock = stakingContract.stakingEpochEndBlock();
+            IStakingAuRa stakingContract = IStakingAuRa(
+                validatorSetContract.stakingContract()
+            );
+            uint256 stakingEpochDuration = stakingContract
+                .stakingEpochDuration();
+            uint256 stakingEpochEndBlock = stakingContract
+                .stakingEpochEndBlock();
             if (expirationBlock > stakingEpochEndBlock) {
-                fullStakingEpochs =
-                    expirationBlock
+                fullStakingEpochs = expirationBlock
                     .sub(stakingEpochEndBlock)
                     .div(stakingEpochDuration)
                     .add(fullStakingEpochs)
                     .add(1);
             }
-            ballotLongBanUntilBlock[ballotId] = fullStakingEpochs.mul(stakingEpochDuration).add(stakingEpochEndBlock);
-            ballotShortBanUntilBlock[ballotId] =
-                fullStakingEpochs
+            ballotLongBanUntilBlock[ballotId] = fullStakingEpochs
+                .mul(stakingEpochDuration)
+                .add(stakingEpochEndBlock);
+            ballotShortBanUntilBlock[ballotId] = fullStakingEpochs
                 .sub(BAN_DURATION)
                 .mul(stakingEpochDuration)
                 .add(stakingEpochEndBlock);
@@ -222,13 +239,17 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// Can only be called by ballot's creator.
     /// @param _ballotId The ballot id that should be canceled.
     function cancel(uint256 _ballotId) external {
-        uint256 senderPoolId = validatorSetContract.idByStakingAddress(msg.sender);
+        uint256 senderPoolId = validatorSetContract.idByStakingAddress(
+            msg.sender
+        );
         require(ballotCreator[_ballotId] == senderPoolId);
         require(ballotStatus[_ballotId] == BALLOT_STATUS_OPEN);
         require(_getCurrentBlockNumber() < ballotExpirationBlock[_ballotId]);
         require(validatorSetContract.isValidatorById(senderPoolId));
         ballotStatus[_ballotId] = BALLOT_STATUS_CANCELED;
-        openCountPerPoolId[senderPoolId] = openCountPerPoolId[senderPoolId].sub(1);
+        openCountPerPoolId[senderPoolId] = openCountPerPoolId[senderPoolId].sub(
+            1
+        );
         uint256 targetPoolId = ballotPoolId[_ballotId];
         ballotIdByPoolId[targetPoolId] = 0;
         emit Canceled(_ballotId);
@@ -243,7 +264,9 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// 3 - vote for removing and banning the pool
     function vote(uint256 _ballotId, uint256 _choice) public {
         require(ballotCreator[_ballotId] != 0);
-        uint256 senderPoolId = validatorSetContract.idByStakingAddress(msg.sender);
+        uint256 senderPoolId = validatorSetContract.idByStakingAddress(
+            msg.sender
+        );
         require(validatorSetContract.isValidatorById(senderPoolId));
         require(senderPoolId != ballotPoolId[_ballotId]);
         require(ballotStatus[_ballotId] == BALLOT_STATUS_OPEN);
@@ -281,20 +304,28 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// @dev Returns a boolean flag indicating whether the specified ballot can be finalized
     /// at the current moment. Used by the `vote` and `finalize` functions.
     /// @param _ballotId The ballot id.
-    function canBeFinalized(uint256 _ballotId) public view returns(bool) {
+    function canBeFinalized(uint256 _ballotId) public view returns (bool) {
         if (ballotStatus[_ballotId] != BALLOT_STATUS_OPEN) {
             return false;
-        } else if (_getCurrentBlockNumber() >= ballotExpirationBlock[_ballotId]) {
+        } else if (
+            _getCurrentBlockNumber() >= ballotExpirationBlock[_ballotId]
+        ) {
             return true;
         } else if (
-            IStakingAuRa(validatorSetContract.stakingContract()).stakingEpoch() == ballotStakingEpoch[_ballotId]
+            IStakingAuRa(validatorSetContract.stakingContract())
+                .stakingEpoch() == ballotStakingEpoch[_ballotId]
         ) {
             uint256 keepVotesCount = ballotVotesKeep[_ballotId];
             uint256 removeVotesCount = ballotVotesRemove[_ballotId];
             uint256 banVotesCount = ballotVotesBan[_ballotId];
-            uint256 validatorsLength = validatorSetContract.getValidatorsIds().length;
+            uint256 validatorsLength = validatorSetContract
+                .getValidatorsIds()
+                .length;
 
-            if (keepVotesCount.add(removeVotesCount).add(banVotesCount) >= validatorsLength) {
+            if (
+                keepVotesCount.add(removeVotesCount).add(banVotesCount) >=
+                validatorsLength
+            ) {
                 return true;
             }
         }
@@ -318,20 +349,26 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// _keepVotesCount - the number of votes for keeping a pool without removal.
     /// _removeVotesCount - the number of votes for a pool removal.
     /// _banVotesCount - the number of votes for a pool banning.
-    function getBallot(uint256 _ballotId) external view returns(
-        uint256 _poolId,
-        uint256 _creatorPoolId,
-        uint256 _expirationBlock,
-        uint256 _longBanUntilBlock,
-        uint256 _shortBanUntilBlock,
-        bytes32 _reason,
-        uint256 _status,
-        uint256 _result,
-        uint256 _threshold,
-        uint256 _keepVotesCount,
-        uint256 _removeVotesCount,
-        uint256 _banVotesCount
-    ) {
+    function getBallot(
+        uint256 _ballotId
+    )
+        external
+        view
+        returns (
+            uint256 _poolId,
+            uint256 _creatorPoolId,
+            uint256 _expirationBlock,
+            uint256 _longBanUntilBlock,
+            uint256 _shortBanUntilBlock,
+            bytes32 _reason,
+            uint256 _status,
+            uint256 _result,
+            uint256 _threshold,
+            uint256 _keepVotesCount,
+            uint256 _removeVotesCount,
+            uint256 _banVotesCount
+        )
+    {
         _poolId = ballotPoolId[_ballotId];
         _creatorPoolId = ballotCreator[_ballotId];
         _expirationBlock = ballotExpirationBlock[_ballotId];
@@ -339,7 +376,9 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
         _shortBanUntilBlock = ballotShortBanUntilBlock[_ballotId];
         _reason = ballotReason[_ballotId];
         _status = ballotStatus[_ballotId];
-        _result = ballotResult[_ballotId] == 0 ? _calcBallotResult(_ballotId) : ballotResult[_ballotId];
+        _result = ballotResult[_ballotId] == 0
+            ? _calcBallotResult(_ballotId)
+            : ballotResult[_ballotId];
         _threshold = ballotThreshold[_ballotId];
         _keepVotesCount = ballotVotesKeep[_ballotId];
         _removeVotesCount = ballotVotesRemove[_ballotId];
@@ -352,7 +391,9 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// is still open and not expired. If the open ballot is expired,
     /// the function returns `true` if the current block is in a ban period.
     /// @param _poolId The pool id to check.
-    function isValidatorUnderBallot(uint256 _poolId) external view returns(bool) {
+    function isValidatorUnderBallot(
+        uint256 _poolId
+    ) external view returns (bool) {
         uint256 ballotId = ballotIdByPoolId[_poolId];
         if (ballotId == 0 || ballotStatus[ballotId] != BALLOT_STATUS_OPEN) {
             return false;
@@ -362,10 +403,12 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
         }
         uint256 result = _calcBallotResult(ballotId);
         if (result == BALLOT_RESULT_REMOVE) {
-            return _getCurrentBlockNumber() <= ballotShortBanUntilBlock[ballotId];
+            return
+                _getCurrentBlockNumber() <= ballotShortBanUntilBlock[ballotId];
         }
         if (result == BALLOT_RESULT_BAN) {
-            return _getCurrentBlockNumber() <= ballotLongBanUntilBlock[ballotId];
+            return
+                _getCurrentBlockNumber() <= ballotLongBanUntilBlock[ballotId];
         }
         return false;
     }
@@ -381,7 +424,8 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
         uint256 targetPoolId = ballotPoolId[_ballotId];
         ballotResult[_ballotId] = result;
         ballotStatus[_ballotId] == BALLOT_STATUS_FINALIZED;
-        openCountPerPoolId[creatorPoolId] = openCountPerPoolId[creatorPoolId].sub(1);
+        openCountPerPoolId[creatorPoolId] = openCountPerPoolId[creatorPoolId]
+            .sub(1);
         if (result == BALLOT_RESULT_REMOVE) {
             validatorSetContract.removeValidator(
                 targetPoolId,
@@ -403,12 +447,17 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     /// Used by `isValidatorUnderBallot` and `finalize` functions.
     /// See the description of the `ballotResult` mapping.
     /// @param _ballotId The ballot id.
-    function _calcBallotResult(uint256 _ballotId) internal view returns(uint256) {
+    function _calcBallotResult(
+        uint256 _ballotId
+    ) internal view returns (uint256) {
         uint256 keepVotesCount = ballotVotesKeep[_ballotId];
         uint256 removeVotesCount = ballotVotesRemove[_ballotId];
         uint256 banVotesCount = ballotVotesBan[_ballotId];
 
-        if (keepVotesCount.add(removeVotesCount).add(banVotesCount) < ballotThreshold[_ballotId]) {
+        if (
+            keepVotesCount.add(removeVotesCount).add(banVotesCount) <
+            ballotThreshold[_ballotId]
+        ) {
             return BALLOT_RESULT_KEEP;
         }
 
@@ -419,7 +468,10 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
                 result = BALLOT_RESULT_REMOVE;
             }
         } else {
-            if (banVotesCount > removeVotesCount && banVotesCount > keepVotesCount) {
+            if (
+                banVotesCount > removeVotesCount &&
+                banVotesCount > keepVotesCount
+            ) {
                 result = BALLOT_RESULT_BAN;
             }
         }
@@ -428,8 +480,7 @@ contract Governance is UpgradeableOwned, BanReasons, IGovernance {
     }
 
     /// @dev Returns the current block number. Needed mostly for unit tests.
-    function _getCurrentBlockNumber() internal view returns(uint256) {
+    function _getCurrentBlockNumber() internal view returns (uint256) {
         return block.number;
     }
-
 }

@@ -1,16 +1,21 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
-import './BlockRewardAuRaBaseMock.sol';
-import '../../contracts/base/BlockRewardAuRaTokens.sol';
+import "./BlockRewardAuRaBaseMock.sol";
+import "../../contracts/base/BlockRewardAuRaTokens.sol";
 
-
-contract BlockRewardAuRaTokensMock is BlockRewardAuRaTokens, BlockRewardAuRaBaseMock {
+contract BlockRewardAuRaTokensMock is
+    BlockRewardAuRaTokens,
+    BlockRewardAuRaBaseMock
+{
     function setEpochPoolReward(
         uint256 _stakingEpoch,
         address _poolMiningAddress,
         uint256 _tokenReward
     ) public payable {
-        uint256 poolId = validatorSetContract.idByMiningAddress(_poolMiningAddress);
+        uint256 poolId = validatorSetContract.idByMiningAddress(
+            _poolMiningAddress
+        );
         require(_stakingEpoch != 0);
         require(_poolMiningAddress != address(0));
         require(poolId != 0);
@@ -19,7 +24,8 @@ contract BlockRewardAuRaTokensMock is BlockRewardAuRaTokens, BlockRewardAuRaBase
         require(epochPoolTokenReward[_stakingEpoch][poolId] == 0);
         require(epochPoolNativeReward[_stakingEpoch][poolId] == 0);
         ITokenMinter tokenMinter = ITokenMinter(
-            IStakingAuRaTokens(validatorSetContract.stakingContract()).erc677TokenContract()
+            IStakingAuRaTokens(validatorSetContract.stakingContract())
+                .erc677TokenContract()
         );
         tokenMinter.mintReward(_tokenReward);
         epochPoolTokenReward[_stakingEpoch][poolId] = _tokenReward;

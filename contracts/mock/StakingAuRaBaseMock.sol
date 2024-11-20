@@ -1,10 +1,9 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
-import '../../contracts/base/StakingAuRaBase.sol';
-
+import "../../contracts/base/StakingAuRaBase.sol";
 
 contract StakingAuRaBaseMock is StakingAuRaBase {
-
     uint256 internal _currentBlockNumber;
 
     // =============================================== Setters ========================================================
@@ -17,11 +16,19 @@ contract StakingAuRaBaseMock is StakingAuRaBase {
         _addPoolInactive(_poolId);
     }
 
-    function clearDelegatorStakeSnapshot(uint256 _poolId, address _delegator, uint256 _stakingEpoch) public {
+    function clearDelegatorStakeSnapshot(
+        uint256 _poolId,
+        address _delegator,
+        uint256 _stakingEpoch
+    ) public {
         delegatorStakeSnapshot[_poolId][_delegator][_stakingEpoch] = 0;
     }
 
-    function clearRewardWasTaken(uint256 _poolId, address _staker, uint256 _epoch) public {
+    function clearRewardWasTaken(
+        uint256 _poolId,
+        address _staker,
+        uint256 _epoch
+    ) public {
         rewardWasTaken[_poolId][_staker][_epoch] = false;
     }
 
@@ -37,11 +44,19 @@ contract StakingAuRaBaseMock is StakingAuRaBase {
         stakeAmountTotal[_poolId] = _amount;
     }
 
-    function setStakeFirstEpoch(uint256 _poolId, address _delegator, uint256 _value) public {
+    function setStakeFirstEpoch(
+        uint256 _poolId,
+        address _delegator,
+        uint256 _value
+    ) public {
         stakeFirstEpoch[_poolId][_delegator] = _value;
     }
 
-    function setStakeLastEpoch(uint256 _poolId, address _delegator, uint256 _value) public {
+    function setStakeLastEpoch(
+        uint256 _poolId,
+        address _delegator,
+        uint256 _value
+    ) public {
         stakeLastEpoch[_poolId][_delegator] = _value;
     }
 
@@ -49,18 +64,19 @@ contract StakingAuRaBaseMock is StakingAuRaBase {
         stakingEpoch = _stakingEpoch;
     }
 
-    function setValidatorSetAddress(IValidatorSetAuRa _validatorSetAddress) public {
+    function setValidatorSetAddress(
+        IValidatorSetAuRa _validatorSetAddress
+    ) public {
         validatorSetContract = _validatorSetAddress;
     }
 
     // =============================================== Private ========================================================
 
-    function _getCurrentBlockNumber() internal view returns(uint256) {
+    function _getCurrentBlockNumber() internal view returns (uint256) {
         return _currentBlockNumber;
     }
 
-    function _getMaxCandidates() internal pure returns(uint256) {
+    function _getMaxCandidates() internal pure returns (uint256) {
         return 100;
     }
-
 }

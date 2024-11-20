@@ -1,7 +1,7 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
 import "./UpgradeabilityAdmin.sol";
-
 
 contract UpgradeableOwned is UpgradeabilityAdmin {
     /// @dev Access check: revert unless `msg.sender` is the owner of the contract.

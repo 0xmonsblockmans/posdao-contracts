@@ -1,15 +1,20 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
-import './BlockRewardAuRaBaseMock.sol';
-import '../../contracts/base/BlockRewardAuRaCoins.sol';
+import "./BlockRewardAuRaBaseMock.sol";
+import "../../contracts/base/BlockRewardAuRaCoins.sol";
 
-
-contract BlockRewardAuRaCoinsMock is BlockRewardAuRaCoins, BlockRewardAuRaBaseMock {
+contract BlockRewardAuRaCoinsMock is
+    BlockRewardAuRaCoins,
+    BlockRewardAuRaBaseMock
+{
     function setEpochPoolReward(
         uint256 _stakingEpoch,
         address _poolMiningAddress
     ) public payable {
-        uint256 poolId = validatorSetContract.idByMiningAddress(_poolMiningAddress);
+        uint256 poolId = validatorSetContract.idByMiningAddress(
+            _poolMiningAddress
+        );
         require(_stakingEpoch != 0);
         require(_poolMiningAddress != address(0));
         require(poolId != 0);

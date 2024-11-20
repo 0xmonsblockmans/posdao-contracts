@@ -1,10 +1,9 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
-import '../../contracts/RandomAuRa.sol';
-
+import "../../contracts/RandomAuRa.sol";
 
 contract RandomAuRaMock is RandomAuRa {
-
     address internal _coinbase;
     uint256 internal _currentBlockNumber;
 
@@ -25,12 +24,11 @@ contract RandomAuRaMock is RandomAuRa {
 
     // =============================================== Private ========================================================
 
-    function _getCoinbase() internal view returns(address) {
+    function _getCoinbase() internal view returns (address) {
         return _coinbase != address(0) ? _coinbase : block.coinbase;
     }
 
-    function _getCurrentBlockNumber() internal view returns(uint256) {
+    function _getCurrentBlockNumber() internal view returns (uint256) {
         return _currentBlockNumber;
     }
-
 }

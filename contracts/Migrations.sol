@@ -1,11 +1,11 @@
-pragma solidity 0.5.10;
-
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
 contract Migrations {
     address public owner;
     uint public last_completed_migration; // solhint-disable-line
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
     }
 
@@ -17,7 +17,8 @@ contract Migrations {
         last_completed_migration = completed;
     }
 
-    function upgrade(address new_address) public restricted { // solhint-disable-line
+    function upgrade(address new_address) public restricted {
+        // solhint-disable-line
         Migrations upgraded = Migrations(new_address);
         upgraded.setCompleted(last_completed_migration);
     }

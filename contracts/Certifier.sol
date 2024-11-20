@@ -1,14 +1,13 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
 import "./interfaces/ICertifier.sol";
 import "./interfaces/IValidatorSetAuRa.sol";
 import "./upgradeability/UpgradeableOwned.sol";
 
-
 /// @dev Allows validators to use a zero gas price for their service transactions
 /// (see https://openethereum.github.io/Permissioning.html#gas-price for more info).
 contract Certifier is UpgradeableOwned, ICertifier {
-
     // =============================================== Storage ========================================================
 
     // WARNING: since this contract is upgradeable, do not remove
@@ -35,7 +34,7 @@ contract Certifier is UpgradeableOwned, ICertifier {
     // ============================================== Modifiers =======================================================
 
     /// @dev Ensures the `initialize` function was called before.
-    modifier onlyInitialized {
+    modifier onlyInitialized() {
         require(isInitialized());
         _;
     }
@@ -62,7 +61,9 @@ contract Certifier is UpgradeableOwned, ICertifier {
     /// @dev Allows the specified addresses to use a zero gas price for their transactions.
     /// Can only be called by the `owner`.
     /// @param _who The address array for which zero gas price transactions must be allowed.
-    function certify(address[] calldata _who) external onlyOwner onlyInitialized {
+    function certify(
+        address[] calldata _who
+    ) external onlyOwner onlyInitialized {
         for (uint256 i = 0; i < _who.length; i++) {
             _certify(_who[i]);
         }
@@ -71,7 +72,9 @@ contract Certifier is UpgradeableOwned, ICertifier {
     /// @dev Denies the specified addresses using a zero gas price for their transactions.
     /// Can only be called by the `owner`.
     /// @param _who The address array for which transactions with a zero gas price must be denied.
-    function revoke(address[] calldata _who) external onlyOwner onlyInitialized {
+    function revoke(
+        address[] calldata _who
+    ) external onlyOwner onlyInitialized {
         for (uint256 i = 0; i < _who.length; i++) {
             address revokeAddress = _who[i];
             require(_certified[revokeAddress]);
@@ -83,10 +86,10 @@ contract Certifier is UpgradeableOwned, ICertifier {
     // =============================================== Getters ========================================================
 
     /// @dev Returns a boolean flag indicating whether the specified address is allowed to use zero gas price
-    /// transactions. Returns `true` if either the address is certified using the `_certify` function or if 
+    /// transactions. Returns `true` if either the address is certified using the `_certify` function or if
     /// `ValidatorSetAuRa.isReportValidatorValid` returns `true` for the specified address.
     /// @param _who The address for which the boolean flag must be determined.
-    function certified(address _who) external view returns(bool) {
+    function certified(address _who) external view returns (bool) {
         if (_certified[_who]) {
             return true;
         }
@@ -98,12 +101,12 @@ contract Certifier is UpgradeableOwned, ICertifier {
     /// This function differs from the `certified`: it doesn't take into account the returned value of
     /// `ValidatorSetAuRa.isReportValidatorValid` function.
     /// @param _who The address for which the boolean flag must be determined.
-    function certifiedExplicitly(address _who) external view returns(bool) {
+    function certifiedExplicitly(address _who) external view returns (bool) {
         return _certified[_who];
     }
 
     /// @dev Returns a boolean flag indicating if the `initialize` function has been called.
-    function isInitialized() public view returns(bool) {
+    function isInitialized() public view returns (bool) {
         return validatorSetContract != IValidatorSetAuRa(0);
     }
 

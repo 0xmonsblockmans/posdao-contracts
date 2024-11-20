@@ -1,10 +1,8 @@
-pragma solidity 0.5.10;
-
-import '../../contracts/ValidatorSetAuRa.sol';
-
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
+import "../../contracts/ValidatorSetAuRa.sol";
 
 contract ValidatorSetAuRaMock is ValidatorSetAuRa {
-
     uint256 internal _currentBlockNumber;
     address internal _systemAddress;
 
@@ -74,27 +72,31 @@ contract ValidatorSetAuRaMock is ValidatorSetAuRa {
         uint256[] memory _likelihood,
         uint256 _likelihoodSum,
         uint256 _randomNumber
-    ) public pure returns(uint256) {
-        return _getRandomIndex(
-            _likelihood,
-            _likelihoodSum,
-            uint256(keccak256(abi.encode(_randomNumber)))
-        );
+    ) public pure returns (uint256) {
+        return
+            _getRandomIndex(
+                _likelihood,
+                _likelihoodSum,
+                uint256(keccak256(abi.encode(_randomNumber)))
+            );
     }
 
     // =============================================== Private ========================================================
 
-    function _getCurrentBlockNumber() internal view returns(uint256) {
+    function _getCurrentBlockNumber() internal view returns (uint256) {
         return _currentBlockNumber;
     }
 
-    function _getSystemAddress() internal view returns(address) {
+    function _getSystemAddress() internal view returns (address) {
         return _systemAddress;
     }
 
     // To keep the unit tests unbroken, rewrite the `_removeMaliciousValidators` internal function
     // since the original one is temporarily turned off in the production contract.
-    function _removeMaliciousValidators(address[] memory _miningAddresses, bytes32 _reason) internal {
+    function _removeMaliciousValidators(
+        address[] memory _miningAddresses,
+        bytes32 _reason
+    ) internal {
         bool removed = false;
 
         for (uint256 i = 0; i < _miningAddresses.length; i++) {
@@ -111,5 +113,4 @@ contract ValidatorSetAuRaMock is ValidatorSetAuRa {
 
         lastChangeBlock = _getCurrentBlockNumber();
     }
-
 }

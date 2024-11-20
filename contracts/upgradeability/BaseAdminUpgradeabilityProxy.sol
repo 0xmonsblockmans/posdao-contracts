@@ -1,15 +1,18 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
 import "./UpgradeabilityAdmin.sol";
 import "./UpgradeabilityProxy.sol";
-
 
 /**
  * @title BaseAdminUpgradeabilityProxy
  * @dev This contract combines an upgradeability proxy with an authorization
  * mechanism for administrative tasks.
  */
-contract BaseAdminUpgradeabilityProxy is UpgradeabilityAdmin, BaseUpgradeabilityProxy {
+contract BaseAdminUpgradeabilityProxy is
+    UpgradeabilityAdmin,
+    BaseUpgradeabilityProxy
+{
     /**
      * @dev Emitted when the administration has been transferred.
      * @param previousAdmin Address of the previous admin.
@@ -45,7 +48,10 @@ contract BaseAdminUpgradeabilityProxy is UpgradeabilityAdmin, BaseUpgradeability
      * @param newAdmin Address to transfer proxy administration to.
      */
     function changeAdmin(address newAdmin) external ifAdmin {
-        require(newAdmin != address(0), "Cannot change the admin of a proxy to the zero address");
+        require(
+            newAdmin != address(0),
+            "Cannot change the admin of a proxy to the zero address"
+        );
         emit AdminChanged(_admin(), newAdmin);
         _setAdmin(newAdmin);
     }
@@ -68,9 +74,12 @@ contract BaseAdminUpgradeabilityProxy is UpgradeabilityAdmin, BaseUpgradeability
      * It should include the signature and the parameters of the function to be called, as described in
      * https://solidity.readthedocs.io/en/v0.4.24/abi-spec.html#function-selector-and-argument-encoding.
      */
-    function upgradeToAndCall(address newImplementation, bytes calldata data) payable external ifAdmin {
+    function upgradeToAndCall(
+        address newImplementation,
+        bytes calldata data
+    ) external payable ifAdmin {
         _upgradeTo(newImplementation);
-        (bool success,) = newImplementation.delegatecall(data);
+        (bool success, ) = newImplementation.delegatecall(data);
         require(success);
     }
 

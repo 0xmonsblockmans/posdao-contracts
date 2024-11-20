@@ -1,10 +1,9 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
-import '../../contracts/base/BlockRewardAuRaBase.sol';
-
+import "../../contracts/base/BlockRewardAuRaBase.sol";
 
 contract BlockRewardAuRaBaseMock is BlockRewardAuRaBase {
-
     uint256 internal _currentBlockNumber;
     address internal _systemAddress;
 
@@ -17,10 +16,13 @@ contract BlockRewardAuRaBaseMock is BlockRewardAuRaBase {
 
     // =============================================== Setters ========================================================
 
-    function sendCoins() public payable {
-    }
+    function sendCoins() public payable {}
 
-    function setBlocksCreated(uint256 _stakingEpoch, address _miningAddress, uint256 _value) public {
+    function setBlocksCreated(
+        uint256 _stakingEpoch,
+        address _miningAddress,
+        uint256 _value
+    ) public {
         uint256 poolId = validatorSetContract.idByMiningAddress(_miningAddress);
         blocksCreated[_stakingEpoch][poolId] = _value;
     }
@@ -33,7 +35,10 @@ contract BlockRewardAuRaBaseMock is BlockRewardAuRaBase {
         _systemAddress = _address;
     }
 
-    function setValidatorMinRewardPercent(uint256 _stakingEpoch, uint256 _percent) public {
+    function setValidatorMinRewardPercent(
+        uint256 _stakingEpoch,
+        uint256 _percent
+    ) public {
         validatorMinRewardPercent[_stakingEpoch] = _percent;
     }
 
@@ -50,7 +55,9 @@ contract BlockRewardAuRaBaseMock is BlockRewardAuRaBase {
         address _poolMiningAddress,
         uint256 _amount
     ) public {
-        uint256 poolId = validatorSetContract.idByMiningAddress(_poolMiningAddress);
+        uint256 poolId = validatorSetContract.idByMiningAddress(
+            _poolMiningAddress
+        );
         snapshotPoolValidatorStakeAmount[_stakingEpoch][poolId] = _amount;
     }
 
@@ -60,18 +67,17 @@ contract BlockRewardAuRaBaseMock is BlockRewardAuRaBase {
         uint256 _stakingEpoch,
         uint256[] memory _validators,
         uint256 _inflationRate
-    ) public view returns(uint256) {
+    ) public view returns (uint256) {
         return _inflationAmount(_stakingEpoch, _validators, _inflationRate);
     }
 
     // =============================================== Private ========================================================
 
-    function _getCurrentBlockNumber() internal view returns(uint256) {
+    function _getCurrentBlockNumber() internal view returns (uint256) {
         return _currentBlockNumber;
     }
 
-    function _getSystemAddress() internal view returns(address) {
+    function _getSystemAddress() internal view returns (address) {
         return _systemAddress;
     }
-
 }

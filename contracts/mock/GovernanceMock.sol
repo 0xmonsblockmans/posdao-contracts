@@ -1,10 +1,9 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
 
-import '../../contracts/Governance.sol';
-
+import "../../contracts/Governance.sol";
 
 contract GovernanceMock is Governance {
-
     uint256 internal _currentBlockNumber;
 
     // =============================================== Setters ========================================================
@@ -15,14 +14,13 @@ contract GovernanceMock is Governance {
 
     // =============================================== Getters ========================================================
 
-    function getCurrentBlockNumber() public view returns(uint256) {
+    function getCurrentBlockNumber() public view returns (uint256) {
         return _getCurrentBlockNumber();
     }
 
     // =============================================== Private ========================================================
 
-    function _getCurrentBlockNumber() internal view returns(uint256) {
+    function _getCurrentBlockNumber() internal view returns (uint256) {
         return _currentBlockNumber;
     }
-
 }

@@ -1,4 +1,6 @@
-pragma solidity 0.5.10;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity ^0.8.18;
+// pragma solidity ;
 
 import "./base/TxPermissionV3.sol";
 //import "./base/TxPermissionV4.sol";
